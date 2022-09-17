@@ -1,56 +1,77 @@
-#Basic Built-In libraries
+# Load EDA Pkgs
 import pandas as pd
 import numpy as np
 
+# Load Data Viz Pkgs
 import seaborn as sns
+
+# Load Text Cleaning Pkgs
 import neattext.functions as nfx
+
+# Load ML Pkgs
+# Estimators
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
 
+# Transformers
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score,classification_report,confusion_matrix
-df = pd.read_csv("Documents/emotion_database.csv")
-df.head()
-df['Emotion'].value_counts()
-sns.countplot(x='Emotion',data=df)
-dir(nfx)
-df['Clean_Text'] = df['Text'].apply(nfx.remove_userhandles)
-df['Clean_Text'] = df['Clean_Text'].apply(nfx.remove_stopwords)
-df
 
+# Load Dataset
+df = pd.read_csv("emotion_dataset_raw.csv")
+
+df.head()
+
+# Value Counts
+df['Emotion'].value_counts()
+
+# Plot
+sns.countplot(x='Emotion',data=df)
+
+# Data Cleaning
+dir(nfx)
+
+# User handles
+df['Clean_Text'] = df['Text'].apply(nfx.remove_userhandles)
+
+# Stopwords
+df['Clean_Text'] = df['Clean_Text'].apply(nfx.remove_stopwords)
+
+# Features & Labels
 Xfeatures = df['Clean_Text']
 ylabels = df['Emotion']
 
+#  Split Data
 x_train,x_test,y_train,y_test = train_test_split(Xfeatures,ylabels,test_size=0.3,random_state=42)
+
+# Build Pipeline
 from sklearn.pipeline import Pipeline
+
+# LogisticRegression Pipeline
 pipe_lr = Pipeline(steps=[('cv',CountVectorizer()),('lr',LogisticRegression())])
+
+# Train and Fit Data
 pipe_lr.fit(x_train,y_train)
 
 pipe_lr
-"""
-Pipeline(memory=None,
-     steps=[('cv', CountVectorizer(analyzer='word', binary=False, decode_error='strict',
-        dtype=<class 'numpy.int64'>, encoding='utf-8', input='content',
-        lowercase=True, max_df=1.0, max_features=None, min_df=1,
-        ngram_range=(1, 1), preprocessor=None, stop_words=None,
-        strip_a...penalty='l2', random_state=None, solver='warn',
-          tol=0.0001, verbose=0, warm_start=False))])
-"""
 
+# Check Accuracy
 pipe_lr.score(x_test,y_test)
-ex1 = "This book was so interesting it made me happy"
-pipe_lr.predict([ex1])
-pipe_lr.predict_proba([ex1])
-pipe_lr.classes_
-pip install joblib
 
+# Make A Prediction
+ex1 = "This book was so interesting it made me happy"
+
+pipe_lr.predict([ex1])
+
+# Prediction Prob
+pipe_lr.predict_proba([ex1])
+
+# To Know the classes
+pipe_lr.classes_
+
+# Save Model & Pipeline
 import joblib
 pipeline_file = open("emotion_classifier_pipe_lr_03_june_2021.pkl","wb")
 joblib.dump(pipe_lr,pipeline_file)
 pipeline_file.close()
-
-import joblib 
-pipe_lr = joblib.load(open("Documents/emotion_classifier_pipe_lr_03_june_2021.pkl","rb"))
-
-          
